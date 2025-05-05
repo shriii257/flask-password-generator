@@ -1,50 +1,68 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request
 import random
 
 app = Flask(__name__)
 
-def generate_passwords(name, birth_year, fav_person, mobile_no):
+def generate_name_phone(name, phone, count=2000):
+    passwords = set()
+    name_variants = [name.lower(), name.capitalize(), name.upper()]
+    phone_parts = [phone[:4], phone[-4:], phone[1:5]]
+
     patterns = [
-        f"{name}{birth_year}", f"{name}@{birth_year}", f"{name}{birth_year}!",
-        f"{name}{fav_person}", f"{fav_person}{birth_year}", f"{mobile_no}{birth_year}",
-        f"{name}123", f"{name}!", f"{name}#"
+        lambda n, p: f"{n}@{p}",
+        lambda n, p: f"{p}@{n}",
+        lambda n, p: f"{n}{p}@",
+        lambda n, p: f"{p}{n}@",
+        lambda n, p: f"{n[:3]}@{p}",
+        lambda n, p: f"{n}@{random.randint(10,99)}{p[-2:]}"
     ]
-    variations = set(patterns)
 
-    # Add common substitutions
-    for word in patterns:
-        variations.add(word.replace("a", "@").replace("o", "0").replace("e", "3"))
+    while len(passwords) < count:
+        n = random.choice(name_variants)
+        p = random.choice(phone_parts)
+        pattern = random.choice(patterns)(n, p)
+        passwords.add(pattern)
 
-    # Generate 1000 random variations
-    random_variations = set()
-    while len(random_variations) < 1000:
-        random_variations.add("".join(random.sample(name + birth_year + fav_person + mobile_no, len(name + birth_year + fav_person + mobile_no))))
+    return list(passwords)
 
-    variations.update(random_variations)
-    
-    return list(variations)
+def generate_name_birthyear(name, year, count=1000):
+    passwords = set()
+    name_variants = [name.lower(), name.capitalize(), name.upper()]
+    year_parts = [year, year[-2:], f"@{year}", f"{year}@"]
 
-@app.route("/", methods=["GET", "POST"])
+    while len(passwords) < count:
+        n = random.choice(name_variants)
+        y = random.choice(year_parts)
+        pattern = random.choice([
+            f"{n}{y}",
+            f"{y}{n}",
+            f"{n}@{y}",
+            f"{n[:3]}{y}",
+            f"{n}@{random.randint(10,99)}{y[-2:]}"
+        ])
+        passwords.add(pattern)
+
+    return list(passwords)
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        name = request.form["name"]
-        birth_year = request.form["birth_year"]
-        fav_person = request.form["fav_person"]
-        mobile_no = request.form["mobile_no"]
+    passwords = []
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        birthyear = request.form.get('birthyear', '').strip()
 
-        passwords = generate_passwords(name, birth_year, fav_person, mobile_no)
+        if name and phone:
+            passwords += generate_name_phone(name, phone)
+        if name and birthyear:
+            passwords += generate_name_birthyear(name, birthyear)
+        if not passwords and (name or phone or birthyear):
+            passwords = [f"{name}@1234", f"user@{phone[:4] if phone else '0000'}"]
 
-        return render_template("index.html", passwords=passwords)
-    
-    return render_template("index.html", passwords=None)
+    return render_template('index.html', passwords=passwords)
 
-@app.route("/download")
-def download():
-    with open("generated_passwords.txt", "w") as file:
-        for password in generate_passwords("test", "2000", "example", "1234567890"):
-            file.write(password + "\n")
-    
-    return send_file("generated_passwords.txt", as_attachment=True)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
+
+
+

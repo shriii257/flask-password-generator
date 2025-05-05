@@ -2,35 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Generator</title>
+    <title>Smart Password Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .passwords {
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: scroll;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+        .password {
+            display: inline-block;
+            margin: 5px 10px;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        footer {
+            margin-top: 40px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Social Engineering Password Generator</h2>
-    <form method="post">
-        <label>First Name:</label>
-        <input type="text" name="name" required><br>
-        
-        <label>Birth Year:</label>
-        <input type="text" name="birth_year" required><br>
-        
-        <label>Favorite Person:</label>
-        <input type="text" name="fav_person" required><br>
-        
-        <label>Mobile Number:</label>
-        <input type="text" name="mobile_no" required><br>
-        
+    <h1>Smart Password Generator 🔐</h1>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Enter your name">
+        <input type="text" name="phone" placeholder="Enter your phone number">
+        <input type="text" name="birthyear" placeholder="Enter your birth year">
         <button type="submit">Generate Passwords</button>
     </form>
 
     {% if passwords %}
-        <h3>Generated Passwords:</h3>
-        <ul>
-            {% for password in passwords[:20] %}
-                <li>{{ password }}</li>
-            {% endfor %}
-        </ul>
-        <a href="/download">Download Passwords</a>
+    <div class="passwords">
+        {% for pwd in passwords %}
+            <div class="password">{{ pwd }}</div>
+        {% endfor %}
+    </div>
     {% endif %}
+
+    <footer>
+        <p>Follow me:</p>
+        <a href="https://github.com/shriii257" target="_blank"><i class="fab fa-github fa-2x"></i></a>
+        <a href="https://instagram.com/shriii_257" target="_blank"><i class="fab fa-instagram fa-2x" style="color:#e1306c;"></i></a>
+    </footer>
 </body>
 </html>
+
+
